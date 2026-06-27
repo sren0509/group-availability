@@ -11,18 +11,35 @@ export default function App() {
   const [responses, setResponses] = useState([])
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => { fetchResponses() }, [])
+
+  // Auto-load previous selection when name is entered
+  useEffect(() => {
+    if (!name.trim()) { setSelectedDates([]); setLoaded(false); return }
+    const existing = responses.find(r => r.name.toLowerCase() === name.trim().toLowerCase())
+    if (existing) {
+      setSelectedDates(existing.unavailable_dates || [])
+      setLoaded(true)
+    } else {
+      if (loaded) setSelectedDates([])
+      setLoaded(false)
+    }
+  }, [name, responses])
 
   async function fetchResponses() {
     const { data } = await supabase.from('responses').select('*')
     if (data) setResponses(data)
   }
 
-  function toggleDate(dateKey) {
-    setSelectedDates(prev =>
-      prev.includes(dateKey) ? prev.filter(d => d !== dateKey) : [...prev, dateKey]
-    )
+  function handleDateClick(dateKey, mode) {
+    setSelectedDates(prev => {
+      if (mode === 'deselect') return prev.filter(d => d !== dateKey)
+      if (mode === 'select') return prev.includes(dateKey) ? prev : [...prev, dateKey]
+      // fallback toggle
+      return prev.includes(dateKey) ? prev.filter(d => d !== dateKey) : [...prev, dateKey]
+    })
   }
 
   async function handleSubmit(e) {
@@ -35,12 +52,12 @@ export default function App() {
     )
     setSubmitting(false)
     if (error) { setMessage('Error saving. Try again.'); return }
-    setMessage('Saved!')
+    setMessage('✓ Saved!')
     fetchResponses()
     setTimeout(() => setMessage(''), 3000)
   }
 
-  // Build summary data
+  // Build summary
   const summaryData = {}
   responses.forEach(r => {
     (r.unavailable_dates || []).forEach(d => {
@@ -56,7 +73,7 @@ export default function App() {
   return (
     <div className="app">
       <h1>📅 Group Availability</h1>
-      <p className="subtitle">Mark dates you're <strong>unavailable</strong></p>
+      <p className="subtitle">Mark dates you're <strong>unavailable</strong> (drag to multi-select)</p>
 
       <form onSubmit={handleSubmit} className="name-form">
         <input
@@ -67,10 +84,14 @@ export default function App() {
           required
         />
         <button type="submit" disabled={submitting || !name.trim()}>
-          {submitting ? 'Saving...' : 'Submit'}
+          {submitting ? '...' : 'Save'}
         </button>
+        {selectedDates.length > 0 && (
+          <button type="button" className="clear-btn" onClick={() => setSelectedDates([])}>Clear</button>
+        )}
       </form>
       {message && <p className="message">{message}</p>}
+      {loaded && <p className="loaded-hint">Loaded your previous selection — edit and save again</p>}
 
       <div className="month-nav">
         <button onClick={() => setCurrentMonth(m => subMonths(m, 1))}>←</button>
@@ -81,14 +102,15 @@ export default function App() {
       <Calendar
         currentMonth={currentMonth}
         selectedDates={selectedDates}
-        onDateClick={toggleDate}
+        onDateClick={handleDateClick}
         summaryData={responses.length ? summaryData : null}
       />
 
       {responses.length > 0 && (
         <div className="legend">
-          <span className="legend-item"><span className="dot selected-dot"></span> Your selection</span>
-          <span className="legend-item"><span className="dot best-dot"></span> Best dates (fewest busy)</span>
+          <span className="legend-item"><span className="dot selected-dot"></span> Your unavailable</span>
+          <span className="legend-item"><span className="dot best-dot"></span> Best dates</span>
+          <span className="legend-item">{responses.length} responses</span>
         </div>
       )}
     </div>
