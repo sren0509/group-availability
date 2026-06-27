@@ -7,6 +7,8 @@ import './App.css'
 export default function App() {
   const [name, setName] = useState('')
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [view, setView] = useState('bimonthly')
+  const nextMonth = addMonths(currentMonth, 1)
   const [selectedDates, setSelectedDates] = useState([])
   const [responses, setResponses] = useState([])
   const [submitting, setSubmitting] = useState(false)
@@ -95,16 +97,33 @@ export default function App() {
 
       <div className="month-nav">
         <button onClick={() => setCurrentMonth(m => subMonths(m, 1))}>←</button>
-        <h2>{format(currentMonth, 'MMMM yyyy')}</h2>
+        <h2>
+          {format(currentMonth, 'MMMM yyyy')}
+          {view === 'bimonthly' && <span> — {format(nextMonth, 'MMMM yyyy')}</span>}
+        </h2>
         <button onClick={() => setCurrentMonth(m => addMonths(m, 1))}>→</button>
+        <select className="view-select" value={view} onChange={e => setView(e.target.value)}>
+          <option value="bimonthly">2 Months</option>
+          <option value="monthly">1 Month</option>
+        </select>
       </div>
 
-      <Calendar
-        currentMonth={currentMonth}
-        selectedDates={selectedDates}
-        onDateClick={handleDateClick}
-        summaryData={responses.length ? summaryData : null}
-      />
+      <div className={`calendars-wrapper${view === 'monthly' ? ' single-month' : ''}`}>
+        <Calendar
+          currentMonth={currentMonth}
+          selectedDates={selectedDates}
+          onDateClick={handleDateClick}
+          summaryData={responses.length ? summaryData : null}
+        />
+        {view === 'bimonthly' && (
+          <Calendar
+            currentMonth={nextMonth}
+            selectedDates={selectedDates}
+            onDateClick={handleDateClick}
+            summaryData={responses.length ? summaryData : null}
+          />
+        )}
+      </div>
 
       {responses.length > 0 && (
         <div className="legend">
