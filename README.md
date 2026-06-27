@@ -1,17 +1,29 @@
-# Group Availability
+# 📅 Group Availability
 
-A simple app for friends to mark unavailable dates and find the best day to meet.
+A simple app to find the best day for a group to meet. Everyone marks the dates they're **unavailable**, and the app highlights the best dates with the fewest conflicts.
 
-## Setup
+**[→ Open App](https://group-availability-sepia.vercel.app)**
 
-1. Create a [Supabase](https://supabase.com) project
-2. Run `supabase-schema.sql` in the SQL Editor
-3. Copy `.env.example` to `.env` and fill in your Supabase URL + anon key
-4. `npm install && npm run dev`
+## How to Use
 
-## Deploy to Vercel
+1. Enter your name
+2. Tap or drag to mark dates you're busy
+3. Hit Save
+4. Share the link with friends — everyone's responses show up on the same calendar
 
-1. Push this repo to GitHub
-2. Import in [Vercel](https://vercel.com)
-3. Add environment variables: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
-4. Deploy
+If you submit again with the same name, it overwrites your previous selection.
+
+## Features
+
+- 📱 Mobile-friendly
+- 🖱️ Drag to select multiple dates
+- 🟢 Best dates highlighted in green
+- 🔄 Auto-loads your previous selection
+- 🔓 No login required
+
+## Tech Stack
+
+- React + Vite
+- Supabase (database)
+- date-fns
+- Vercel (hosting)
