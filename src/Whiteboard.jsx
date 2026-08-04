@@ -89,7 +89,7 @@ export default function Whiteboard({ activeName }) {
         />
         <button
           onClick={handlePost}
-          disabled={submitting || !memoInput.trim()}
+          disabled={submitting || !memoInput.trim() || !activeName}
           className="px-5 py-2.5 bg-[#3b3bf5] text-white rounded-lg text-sm font-medium hover:bg-[#2d2de0] transition-colors whitespace-nowrap disabled:opacity-50"
         >
           Post

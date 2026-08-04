@@ -253,7 +253,7 @@ export default function App() {
                   )}
                   <button
                     onClick={handleSave}
-                    disabled={saving}
+                    disabled={saving || !activeName}
                     className="flex items-center gap-2 px-5 py-2 bg-[#3b3bf5] text-white rounded-lg text-sm font-medium hover:bg-[#2d2de0] transition-colors disabled:opacity-50"
                   >
                     <Save size={15} />
