@@ -110,7 +110,7 @@ export default function CreateEvent() {
       .single()
     setLoading(false)
     if (err) { setError("Something went wrong. Try again."); return }
-    navigate(`/e/${data.id}`, { state: { justCreated: true } })
+    navigate(`/e/${data.id}`, { state: { justCreated: true, creatorName: creatorName.trim() } })
   }
 
   const onKey = (e) => { if (e.key === 'Enter') handleCreate() }

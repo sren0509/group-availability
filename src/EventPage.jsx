@@ -47,7 +47,15 @@ export default function EventPage() {
   const draggedKeys = useRef(new Set())
 
   useEffect(() => { fetchEvent() }, [eventId])
-  useEffect(() => { if (event) fetchAllResponses() }, [event])
+  useEffect(() => {
+    if (!event) return
+    fetchAllResponses()
+    const creator = location.state?.creatorName
+    if (creator) {
+      setNameInput(creator)
+      setActiveName(creator)
+    }
+  }, [event])
 
   async function fetchEvent() {
     const { data } = await supabase.from('events').select('*').eq('id', eventId).single()
