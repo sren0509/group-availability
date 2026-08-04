@@ -2,6 +2,22 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from './supabase'
 
+const URL_SPLIT = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]+)/g
+const URL_TEST  = /^(https?:\/\/|www\.)/
+
+function NoteContent({ text }) {
+  const parts = text.split(URL_SPLIT)
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (!URL_TEST.test(part)) return <span key={i}>{part}</span>
+        const href = part.startsWith('http') ? part : `https://${part}`
+        return <a key={i} href={href} target="_blank" rel="noopener noreferrer" className="underline break-all" onClick={e => e.stopPropagation()}>{part}</a>
+      })}
+    </>
+  )
+}
+
 const NOTE_COLORS = [
   "bg-yellow-100 border-yellow-300",
   "bg-pink-100 border-pink-300",
@@ -75,7 +91,7 @@ export default function Whiteboard({ activeName, eventId }) {
                 >
                   <X size={10} />
                 </button>
-                <p className="text-sm text-foreground whitespace-pre-wrap leading-snug break-words">{note.content}</p>
+                <p className="text-sm text-foreground whitespace-pre-wrap leading-snug break-words"><NoteContent text={note.content} /></p>
               </div>
             ))}
           </div>
@@ -93,7 +109,7 @@ export default function Whiteboard({ activeName, eventId }) {
         />
         <button
           onClick={handlePost}
-          disabled={submitting || !memoInput.trim() || !activeName}
+          disabled={submitting || !memoInput.trim()}
           className="px-5 py-2.5 bg-[#3b3bf5] text-white rounded-lg text-sm font-medium hover:bg-[#2d2de0] transition-colors whitespace-nowrap disabled:opacity-50"
         >
           Post

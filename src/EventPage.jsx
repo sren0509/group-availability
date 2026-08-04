@@ -453,7 +453,7 @@ export default function EventPage() {
 
           {/* RIGHT: whiteboard */}
           <div className="w-full md:w-80 md:shrink-0 md:self-stretch flex flex-col" style={{ minHeight: '360px' }}>
-            <Whiteboard activeName={activeName} eventId={eventId} />
+            <Whiteboard activeName={activeName || nameInput.trim()} eventId={eventId} />
           </div>
 
         </div>
