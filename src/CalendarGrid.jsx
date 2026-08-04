@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 
@@ -17,7 +19,6 @@ const HEAT_COLORS = [
   { bg: "#5a7d6b", text: "#ffffff" },
   { bg: "#739e87", text: "#ffffff" },
   { bg: "#8fb89f", text: "#ffffff" },
-  { bg: "#b2cfc2", text: "#2d4a3e" },
   { bg: "#cfe0d8", text: "#2d4a3e" },
   { bg: "#eaeeec", text: "#708c80" },
 ]
@@ -26,14 +27,15 @@ function heatColor(unavailCount, total) {
   if (total === 0) return HEAT_COLORS[0]
   const ratio = unavailCount / total
   if (ratio === 0)   return HEAT_COLORS[0]
-  if (ratio <= 0.25) return HEAT_COLORS[1]
-  if (ratio <= 0.5)  return HEAT_COLORS[2]
-  if (ratio <= 0.75) return HEAT_COLORS[3]
-  if (ratio < 1)     return HEAT_COLORS[4]
-  return HEAT_COLORS[5]
+  if (ratio <= 0.33) return HEAT_COLORS[1]
+  if (ratio <= 0.66) return HEAT_COLORS[2]
+  if (ratio < 1)     return HEAT_COLORS[3]
+  return HEAT_COLORS[4]
 }
 
-export default function CalendarGrid({ year, month, myUnavailable, heatmap, totalPeople, today, onDayMouseDown, onDayMouseEnter }) {
+export default function CalendarGrid({ year, month, myUnavailable, heatmap, totalPeople, today, onDayMouseDown, onDayMouseEnter, responses }) {
+  const [hoveredKey, setHoveredKey] = useState(null)
+
   const daysInMonth = getDaysInMonth(year, month)
   const firstDay = getFirstDayOfWeek(year, month)
   const daysInPrev = getDaysInMonth(year, month - 1 < 0 ? 11 : month - 1)
@@ -56,6 +58,13 @@ export default function CalendarGrid({ year, month, myUnavailable, heatmap, tota
     cells.push({ key: dateKey(nextYear, nextMonth, d), day: d, faded: true })
   }
 
+  function getAvailableNames(key) {
+    if (!responses || responses.size === 0) return []
+    return Array.from(responses.entries())
+      .filter(([, unavailDates]) => !unavailDates.has(key))
+      .map(([name]) => name)
+  }
+
   return (
     <div className="flex-1 min-w-0">
       <div className="text-center font-bold text-base mb-3 text-foreground">
@@ -71,14 +80,18 @@ export default function CalendarGrid({ year, month, myUnavailable, heatmap, tota
           const count = (!cell.faded && heatmap.get(cell.key)) || 0
           const { bg, text } = cell.faded ? { bg: "", text: "" } : heatColor(count, totalPeople)
           const available = totalPeople - count
+          const isHovered = hoveredKey === cell.key && !cell.faded && totalPeople > 0
+          const availableNames = isHovered ? getAvailableNames(cell.key) : []
+          const allAvailable = availableNames.length === totalPeople
+
           return (
             <div
               key={cell.key + cell.faded}
               onMouseDown={() => !cell.faded && onDayMouseDown(cell.key)}
-              onMouseEnter={() => !cell.faded && onDayMouseEnter(cell.key)}
-              title={!cell.faded && totalPeople > 0 ? `${available}/${totalPeople} available` : undefined}
+              onMouseEnter={() => { if (!cell.faded) { onDayMouseEnter(cell.key); setHoveredKey(cell.key) } }}
+              onMouseLeave={() => setHoveredKey(null)}
               className={[
-                "h-14 flex flex-col items-start justify-between p-1.5 text-sm font-medium border border-border select-none transition-colors duration-200",
+                "relative h-14 flex flex-col items-start justify-between p-1.5 text-sm font-medium border border-border select-none transition-colors duration-200",
                 cell.faded ? "text-muted-foreground/40 bg-background" : "cursor-pointer",
                 isToday ? "ring-2 ring-[#3b3bf5] ring-inset" : "",
                 isMyUnavail ? "ring-2 ring-[#95424E] ring-inset" : "",
@@ -90,6 +103,23 @@ export default function CalendarGrid({ year, month, myUnavailable, heatmap, tota
                 <span className="text-[9px] font-semibold opacity-60 leading-none">
                   {available}/{totalPeople}
                 </span>
+              )}
+
+              {/* Hover tooltip */}
+              {isHovered && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-20 pointer-events-none">
+                  <div className="bg-gray-900 text-white text-[11px] rounded-lg px-2.5 py-1.5 shadow-lg whitespace-nowrap">
+                    {allAvailable
+                      ? <span className="font-medium">All available</span>
+                      : availableNames.length === 0
+                        ? <span className="opacity-70">No one available</span>
+                        : availableNames.map((name, i) => (
+                            <span key={name}>{name}{i < availableNames.length - 1 ? ", " : ""}</span>
+                          ))
+                    }
+                  </div>
+                  <div className="w-2 h-2 bg-gray-900 rotate-45 mx-auto -mt-1" />
+                </div>
               )}
             </div>
           )

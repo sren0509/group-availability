@@ -37,8 +37,8 @@ export default function EventPage() {
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState("")
 
-  // Share banner
-  const [bannerCollapsed, setBannerCollapsed] = useState(false)
+  // Share banner — only auto-open when coming from event creation
+  const [bannerCollapsed, setBannerCollapsed] = useState(!location.state?.justCreated)
   const [showQR, setShowQR] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -234,7 +234,7 @@ export default function EventPage() {
               )}
             </div>
             <p className="text-muted-foreground mt-0.5 text-sm">
-              Mark dates you&apos;re <strong>unavailable</strong> (drag to multi-select)
+              Mark dates you&apos;re <strong style={{ color: "#af2634" }}>unavailable</strong> (drag to multi-select)
             </p>
           </div>
 
@@ -322,7 +322,10 @@ export default function EventPage() {
             <Check size={18} />
           </button>
         </div>
-        {nameError && <p className="text-red-500 text-xs text-center -mt-4 mb-4">Please enter your name.</p>}
+        {nameError
+          ? <p className="text-red-500 text-xs text-center -mt-4 mb-4">Please enter your name.</p>
+          : !activeName && <p className="text-muted-foreground text-xs text-center -mt-4 mb-4">Enter your name and hit ✓ to start marking dates.</p>
+        }
 
         {/* Two-column layout */}
         <div className="flex gap-5 items-stretch">
@@ -385,19 +388,17 @@ export default function EventPage() {
                     today={todayKey}
                     onDayMouseDown={handleDayMouseDown}
                     onDayMouseEnter={handleDayMouseEnter}
+                    responses={responses}
                   />
                 ))}
               </div>
-              {!activeName && (
-                <p className="text-center text-xs text-muted-foreground mt-3">Enter your name and hit ✓ to start marking dates.</p>
-              )}
 
               {/* Legend + Save */}
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
                 <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                   <span className="font-medium">Availability:</span>
                   <div className="flex items-center gap-1">
-                    {["#5a7d6b","#739e87","#8fb89f","#b2cfc2","#cfe0d8","#eaeeec"].map((c) => (
+                    {["#5a7d6b","#739e87","#8fb89f","#cfe0d8","#eaeeec"].map((c) => (
                       <div key={c} className="w-4 h-4 rounded-sm border border-black/10" style={{ background: c }} />
                     ))}
                   </div>
