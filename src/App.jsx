@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { addMonths, subMonths, format } from 'date-fns'
 import Calendar from './Calendar'
+import Whiteboard from './Whiteboard'
 import { supabase } from './supabase'
 import './App.css'
 
@@ -68,9 +69,7 @@ export default function App() {
       summaryData[d].names.push(r.name)
     })
   })
-  const counts = Object.values(summaryData).map(s => s.count)
-  const minCount = counts.length ? Math.min(...counts) : 0
-  Object.values(summaryData).forEach(s => { s.isBest = s.count === minCount })
+  // No best-date highlighting for now
 
   return (
     <div className="app">
@@ -128,10 +127,11 @@ export default function App() {
       {responses.length > 0 && (
         <div className="legend">
           <span className="legend-item"><span className="dot selected-dot"></span> Your unavailable</span>
-          <span className="legend-item"><span className="dot best-dot"></span> Best dates</span>
           <span className="legend-item">{responses.length} responses</span>
         </div>
       )}
+
+      <Whiteboard />
     </div>
   )
 }
