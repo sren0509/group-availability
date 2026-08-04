@@ -100,6 +100,7 @@ export default function EventPage() {
   }
 
   const handleDayMouseDown = useCallback((key) => {
+    if (!activeName) return
     dragging.current = true
     draggedKeys.current = new Set([key])
     const next = new Set(unavailable)
@@ -110,7 +111,7 @@ export default function EventPage() {
   }, [unavailable, activeName])
 
   const handleDayMouseEnter = useCallback((key) => {
-    if (!dragging.current || draggedKeys.current.has(key)) return
+    if (!activeName || !dragging.current || draggedKeys.current.has(key)) return
     draggedKeys.current.add(key)
     const next = new Set(unavailable)
     if (dragMode.current === "add") next.add(key)
@@ -432,7 +433,7 @@ export default function EventPage() {
                   {responses.size} {responses.size === 1 ? "person" : "people"} responded
                 </p>
                 <div className="flex flex-col gap-2">
-                  {Array.from(responses.entries()).map(([person, dates]) => (
+                  {Array.from(responses.entries()).filter(([person]) => person).map(([person, dates]) => (
                     <div key={person} className="flex items-start gap-2">
                       <div className="w-6 h-6 rounded-full bg-[#3b3bf5]/10 text-[#3b3bf5] flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
                         {person[0].toUpperCase()}
