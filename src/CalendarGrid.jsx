@@ -81,9 +81,9 @@ export default function CalendarGrid({ year, month, myUnavailable, heatmap, tota
                 "h-14 flex flex-col items-start justify-between p-1.5 text-sm font-medium border border-border select-none transition-colors duration-200",
                 cell.faded ? "text-muted-foreground/40 bg-background" : "cursor-pointer",
                 isToday ? "ring-2 ring-[#3b3bf5] ring-inset" : "",
-                isMyUnavail ? "ring-2 ring-white/60 ring-inset" : "",
+                isMyUnavail ? "ring-2 ring-[#95424E] ring-inset" : "",
               ].filter(Boolean).join(" ")}
-              style={{ backgroundColor: cell.faded ? undefined : bg, color: cell.faded ? undefined : text }}
+              style={{ backgroundColor: cell.faded ? undefined : bg, color: cell.faded ? undefined : isMyUnavail ? "#af2634" : text }}
             >
               <span>{cell.day}</span>
               {!cell.faded && totalPeople > 0 && (

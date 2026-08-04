@@ -11,15 +11,19 @@ const NOTE_COLORS = [
   "bg-orange-100 border-orange-300",
 ]
 
-export default function Whiteboard({ activeName }) {
+export default function Whiteboard({ activeName, eventId }) {
   const [notes, setNotes] = useState([])
   const [memoInput, setMemoInput] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => { fetchNotes() }, [])
+  useEffect(() => { if (eventId) fetchNotes() }, [eventId])
 
   async function fetchNotes() {
-    const { data } = await supabase.from('notes').select('*').order('created_at', { ascending: true })
+    const { data } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: true })
     if (data) setNotes(data)
   }
 
@@ -27,7 +31,7 @@ export default function Whiteboard({ activeName }) {
     const text = memoInput.trim()
     if (!text) return
     setSubmitting(true)
-    await supabase.from('notes').insert({ content: text, author: activeName || 'Anonymous' })
+    await supabase.from('notes').insert({ event_id: eventId, content: text, author: activeName || 'Anonymous' })
     setSubmitting(false)
     setMemoInput("")
     fetchNotes()
