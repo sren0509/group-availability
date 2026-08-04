@@ -128,56 +128,38 @@ export default function App() {
     ? `${MONTH_NAMES[months[0].month]} ${months[0].year}`
     : `${MONTH_NAMES[months[0].month]} ${months[0].year} — ${MONTH_NAMES[months[months.length - 1].month]} ${months[months.length - 1].year}`
 
-  // Login screen
-  if (!activeName) {
-    return (
-      <div className="min-h-screen bg-[#f1f2f4] flex flex-col items-center justify-center px-4">
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-10 w-full max-w-sm text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-1">📅 Group Availability</h1>
-          <p className="text-muted-foreground text-sm mb-6">Enter your name to get started</p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={nameInput}
-              autoFocus
-              onChange={(e) => { setNameInput(e.target.value); setNameError(false) }}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              placeholder="Your name"
-              className="flex-1 px-4 py-2.5 rounded-lg border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#3b3bf5] text-sm"
-            />
-            <button
-              onClick={handleLogin}
-              className="px-5 py-2.5 bg-[#3b3bf5] text-white rounded-lg font-medium text-sm hover:bg-[#2d2de0] transition-colors"
-            >
-              <Check size={18} />
-            </button>
-          </div>
-          {nameError && <p className="text-red-500 text-xs mt-2">Please enter your name.</p>}
-        </div>
-      </div>
-    )
-  }
-
-  // Main app
   return (
     <div className="min-h-screen bg-[#f1f2f4] flex flex-col items-center py-10 px-4">
       <div className="w-full max-w-7xl">
 
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-5">
           <h1 className="text-3xl font-bold text-foreground flex items-center justify-center gap-2">
             <span>📅</span> Group Availability
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Hey <strong>{activeName}</strong> — mark dates you&apos;re <strong>unavailable</strong> (drag to multi-select)
+            Mark dates you&apos;re <strong>unavailable</strong> (drag to multi-select)
           </p>
+        </div>
+
+        {/* Name input */}
+        <div className="flex gap-2 w-1/2 mx-auto mb-6">
+          <input
+            type="text"
+            value={nameInput}
+            onChange={(e) => { setNameInput(e.target.value); setNameError(false) }}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            placeholder="Your name"
+            className="flex-1 px-4 py-2.5 rounded-lg border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#3b3bf5] text-sm"
+          />
           <button
-            onClick={() => { setActiveName(""); setNameInput(""); setUnavailable(new Set()) }}
-            className="mt-2 text-xs text-muted-foreground underline hover:text-foreground transition-colors"
+            onClick={handleLogin}
+            className="px-6 py-2.5 bg-[#3b3bf5] text-white rounded-lg font-medium text-sm hover:bg-[#2d2de0] transition-colors"
           >
-            Switch user
+            <Check size={18} />
           </button>
         </div>
+        {nameError && <p className="text-red-500 text-xs text-center -mt-4 mb-4">Please enter your name.</p>}
 
         {/* Two-column layout */}
         <div className="flex gap-5 items-stretch">
@@ -228,7 +210,7 @@ export default function App() {
               </div>
 
               {/* Calendar grids */}
-              <div className="flex gap-6 overflow-x-auto">
+              <div className={`flex gap-6 overflow-x-auto transition-opacity duration-200 ${!activeName ? "opacity-40 pointer-events-none select-none" : ""}`}>
                 {months.map(({ year, month }) => (
                   <CalendarGrid
                     key={`${year}-${month}`}
@@ -243,6 +225,9 @@ export default function App() {
                   />
                 ))}
               </div>
+              {!activeName && (
+                <p className="text-center text-xs text-muted-foreground mt-3">Enter your name and hit ✓ to start marking dates.</p>
+              )}
 
               {/* Legend + Save */}
               <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
