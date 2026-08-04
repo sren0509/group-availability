@@ -203,14 +203,14 @@ export default function EventPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f1f2f4] flex flex-col items-center py-10 px-4">
+    <div className="min-h-screen bg-[#f1f2f4] flex flex-col items-center py-6 md:py-10 px-3 md:px-4">
       <div className="w-full max-w-7xl">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-5">
-          <div>
+        <div className="flex items-start justify-between mb-4 md:mb-5 gap-2">
+          <div className="min-w-0">
             <div className="flex items-center gap-2 group">
-              <span className="text-2xl">📅</span>
+              <span className="text-xl md:text-2xl">📅</span>
               {editingName ? (
                 <input
                   autoFocus
@@ -218,22 +218,22 @@ export default function EventPage() {
                   onChange={(e) => setNameEditVal(e.target.value)}
                   onBlur={saveEventName}
                   onKeyDown={onNameEditKey}
-                  className="text-2xl font-bold text-foreground bg-transparent border-b-2 border-[#3b3bf5] focus:outline-none"
+                  className="text-lg md:text-2xl font-bold text-foreground bg-transparent border-b-2 border-[#3b3bf5] focus:outline-none min-w-0 w-full"
                 />
               ) : (
                 <>
-                  <h1 className="text-2xl font-bold text-foreground">{event.name}</h1>
+                  <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">{event.name}</h1>
                   <button
                     onClick={startEditName}
                     title="Rename event"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0"
                   >
                     <Pencil size={15} />
                   </button>
                 </>
               )}
             </div>
-            <p className="text-muted-foreground mt-0.5 text-sm">
+            <p className="text-muted-foreground mt-0.5 text-xs md:text-sm">
               Mark dates you&apos;re <strong style={{ color: "#af2634" }}>unavailable</strong> (drag to multi-select)
             </p>
           </div>
@@ -241,9 +241,9 @@ export default function EventPage() {
           {bannerCollapsed && (
             <button
               onClick={() => setBannerCollapsed(false)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-white text-sm font-medium text-foreground shadow-sm hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-white text-xs md:text-sm font-medium text-foreground shadow-sm hover:bg-gray-50 transition-colors shrink-0"
             >
-              <Share2 size={14} /> Share
+              <Share2 size={13} /> Share
             </button>
           )}
         </div>
@@ -328,7 +328,7 @@ export default function EventPage() {
         }
 
         {/* Two-column layout */}
-        <div className="flex gap-5 items-stretch">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-5 md:items-stretch">
 
           {/* LEFT: calendar */}
           <div className="flex-1 min-w-0">
@@ -342,7 +342,7 @@ export default function EventPage() {
                 >
                   <ChevronLeft size={16} />
                 </button>
-                <span className="font-bold text-base text-foreground">{rangeLabel}</span>
+                <span className="font-bold text-sm md:text-base text-foreground text-center px-1">{rangeLabel}</span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={nextMonths}
@@ -394,7 +394,7 @@ export default function EventPage() {
               </div>
 
               {/* Legend + Save */}
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+              <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-3 border-t border-border">
                 <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                   <span className="font-medium">Availability:</span>
                   <div className="flex items-center gap-1">
@@ -452,7 +452,7 @@ export default function EventPage() {
           </div>
 
           {/* RIGHT: whiteboard */}
-          <div className="w-80 shrink-0 self-stretch flex flex-col">
+          <div className="w-full md:w-80 md:shrink-0 md:self-stretch flex flex-col" style={{ minHeight: '360px' }}>
             <Whiteboard activeName={activeName} eventId={eventId} />
           </div>
 
