@@ -35,7 +35,8 @@ function AppShell() {
   const label = `${MONTH_NAMES[m0]} ${y0} — ${MONTH_NAMES[m1]} ${y1}`
 
   return (
-    <div className="min-h-screen bg-[#f1f2f4] flex flex-col items-center py-10 px-4">
+    <div className="min-h-screen flex flex-col items-center py-10 px-4 relative" style={{ backgroundImage: "url('/bg.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
+      <div className="absolute inset-0 bg-white/50 backdrop-blur-sm pointer-events-none" />
       <div className="w-full max-w-7xl">
         <div className="text-center mb-5">
           <h1 className="text-3xl font-bold text-foreground flex items-center justify-center gap-2">

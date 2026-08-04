@@ -226,8 +226,9 @@ export default function EventPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f1f2f4] flex flex-col items-center py-6 md:py-10 px-3 md:px-4">
-      <div className="w-full max-w-7xl">
+    <div className="min-h-screen flex flex-col items-center py-6 md:py-10 px-3 md:px-4 relative" style={{ backgroundImage: "url('/bg.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}>
+      <div className="absolute inset-0 bg-white/60 backdrop-blur-sm pointer-events-none" />
+      <div className="relative z-10 w-full max-w-7xl">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-4 md:mb-5 gap-2">
