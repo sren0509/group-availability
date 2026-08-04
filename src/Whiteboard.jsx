@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { supabase } from './supabase'
 
-const URL_SPLIT = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]+)/g
-const URL_TEST  = /^(https?:\/\/|www\.)/
+const URL_SPLIT = /(https?:\/\/[^\s]+|(?:www\.)[^\s]+|[a-zA-Z0-9-]+\.(?:com|org|net|io|app|co|tv|gg|ai|dev|me|edu|gov|uk)[^\s]*)/g
+const URL_TEST  = /^(https?:\/\/|www\.|[a-zA-Z0-9-]+\.(?:com|org|net|io|app|co|tv|gg|ai|dev|me|edu|gov|uk))/
 
 function NoteContent({ text }) {
   const parts = text.split(URL_SPLIT)
@@ -109,7 +109,7 @@ export default function Whiteboard({ activeName, eventId }) {
         />
         <button
           onClick={handlePost}
-          disabled={submitting || !memoInput.trim()}
+          disabled={submitting || !memoInput.trim() || !activeName}
           className="px-5 py-2.5 bg-[#3b3bf5] text-white rounded-lg text-sm font-medium hover:bg-[#2d2de0] transition-colors whitespace-nowrap disabled:opacity-50"
         >
           Post

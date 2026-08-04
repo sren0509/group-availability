@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, ChevronDown, Check, Save, Pencil, Copy, Share2, QrCode, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, Check, Pencil, Copy, Share2, QrCode, X } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import CalendarGrid, { dateKey } from './CalendarGrid'
 import Whiteboard from './Whiteboard'
@@ -42,9 +42,24 @@ export default function EventPage() {
   const [showQR, setShowQR] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  // New Event popover
+  const [showNewEventPopover, setShowNewEventPopover] = useState(false)
+  const [newEventCopied, setNewEventCopied] = useState(false)
+  const newEventPopoverRef = useRef(null)
+
   const dragging = useRef(false)
   const dragMode = useRef("add")
   const draggedKeys = useRef(new Set())
+
+  useEffect(() => {
+    if (!showNewEventPopover) return
+    const handler = (e) => {
+      if (newEventPopoverRef.current && !newEventPopoverRef.current.contains(e.target))
+        setShowNewEventPopover(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showNewEventPopover])
 
   useEffect(() => { fetchEvent() }, [eventId])
   useEffect(() => {
@@ -158,6 +173,13 @@ export default function EventPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const newEventUrl = window.location.origin
+  const handleNewEventCopy = () => {
+    navigator.clipboard.writeText(newEventUrl).catch(() => {})
+    setNewEventCopied(true)
+    setTimeout(() => setNewEventCopied(false), 2000)
+  }
+
   // Calendar navigation
   const prevMonths = () => {
     let m = startMonth - monthCount, y = startYear
@@ -239,14 +261,44 @@ export default function EventPage() {
             </p>
           </div>
 
-          {bannerCollapsed && (
-            <button
-              onClick={() => setBannerCollapsed(false)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-white text-xs md:text-sm font-medium text-foreground shadow-sm hover:bg-gray-50 transition-colors shrink-0"
-            >
-              <Share2 size={13} /> Share
-            </button>
-          )}
+          {/* Split pill button */}
+          <div className="relative shrink-0" ref={newEventPopoverRef}>
+            <div className="flex items-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
+              <button
+                onClick={() => setBannerCollapsed(p => !p)}
+                className="flex items-center gap-1.5 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-foreground hover:bg-gray-50 transition-colors"
+              >
+                <Share2 size={13} /> Share
+              </button>
+              <div className="w-px self-stretch bg-border" />
+              <button
+                onClick={() => setShowNewEventPopover(p => !p)}
+                className="flex items-center gap-1 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-foreground hover:bg-gray-50 transition-colors"
+              >
+                + New Event
+              </button>
+            </div>
+
+            {/* New Event popover */}
+            {showNewEventPopover && (
+              <div className="absolute right-0 top-full mt-2 z-30 bg-white rounded-2xl border border-border shadow-xl p-4 w-72 md:w-80">
+                <p className="text-sm font-semibold text-foreground mb-3">Share this link to start a new event:</p>
+                <div className="flex gap-2">
+                  <input
+                    readOnly
+                    value={newEventUrl}
+                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-[#f9f9fb] text-foreground text-xs font-mono focus:outline-none min-w-0"
+                  />
+                  <button
+                    onClick={handleNewEventCopy}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors shrink-0 ${newEventCopied ? "bg-green-100 text-green-700" : "bg-[#3b3bf5] text-white hover:bg-[#2d2de0]"}`}
+                  >
+                    {newEventCopied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Share banner */}
