@@ -81,8 +81,23 @@ function AppShell() {
                 <span className="text-base">🗒️</span>
                 <h2 className="text-sm font-semibold text-foreground">Trip Whiteboard</h2>
               </div>
-              <div className="flex-1 p-5 bg-[#fffef5]">
-                <p className="text-muted-foreground/40 text-sm italic">Nothing here yet — be the first!</p>
+              <div
+                className="flex-1 overflow-hidden p-5 bg-[#fffef5]"
+                style={{ backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, #e5e7eb 27px, #e5e7eb 28px)", backgroundPositionY: "12px" }}
+              >
+                <div className="flex flex-wrap gap-3 content-start">
+                  {[
+                    { text: "Denali hike 🏔️", author: "naye", color: "bg-yellow-100 border-yellow-300", rot: -2 },
+                    { text: "Bear spray!!", author: "Sally", color: "bg-pink-100 border-pink-300", rot: 1 },
+                    { text: "Book flights early", author: "Siying", color: "bg-blue-100 border-blue-300", rot: -1 },
+                    { text: "Airbnb in Anchorage?", author: "feifei", color: "bg-green-100 border-green-300", rot: 2 },
+                  ].map((note, i) => (
+                    <div key={i} className={`${note.color} border rounded-lg px-3 py-2 shadow-sm`} style={{ transform: `rotate(${note.rot}deg)`, maxWidth: "130px" }}>
+                      <p className="text-sm text-foreground leading-snug">{note.text}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1 font-medium">{note.author}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
