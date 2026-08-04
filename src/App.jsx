@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, ChevronDown, Check } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, Check, Save } from 'lucide-react'
 import CalendarGrid, { dateKey } from './CalendarGrid'
 import Whiteboard from './Whiteboard'
 import { supabase } from './supabase'
@@ -13,7 +13,6 @@ export default function App() {
 
   const [nameInput, setNameInput] = useState("")
   const [nameError, setNameError] = useState(false)
-  const [nameSaved, setNameSaved] = useState(false)
   const [activeName, setActiveName] = useState("")
 
   const [startYear, setStartYear] = useState(today.getFullYear())
@@ -23,10 +22,12 @@ export default function App() {
 
   const [responses, setResponses] = useState(new Map())
   const [unavailable, setUnavailable] = useState(new Set())
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState("")
+
   const dragging = useRef(false)
   const dragMode = useRef("add")
   const draggedKeys = useRef(new Set())
-  const saveTimeout = useRef(null)
 
   useEffect(() => { fetchAllResponses() }, [])
 
@@ -49,30 +50,23 @@ export default function App() {
   responses.forEach((dates) => dates.forEach((d) => heatmap.set(d, (heatmap.get(d) || 0) + 1)))
   const totalPeople = responses.size
 
-  const handleSave = () => {
+  // Step 1: "login" — set name and load existing dates
+  const handleLogin = () => {
     const n = nameInput.trim()
     if (!n) { setNameError(true); return }
     setNameError(false)
     setActiveName(n)
-    setNameSaved(true)
     const existing = responses.get(n)
     setUnavailable(existing ? new Set(existing) : new Set())
-    setTimeout(() => setNameSaved(false), 2000)
   }
 
-  const saveResponse = (next) => {
+  // Step 2: date clicking — local state only, no Supabase yet
+  const updateLocal = (next) => {
     setResponses(prev => {
       const updated = new Map(prev)
       updated.set(activeName, new Set(next))
       return updated
     })
-    clearTimeout(saveTimeout.current)
-    saveTimeout.current = setTimeout(async () => {
-      await supabase.from('responses').upsert(
-        { name: activeName, unavailable_dates: [...next], updated_at: new Date().toISOString() },
-        { onConflict: 'name' }
-      )
-    }, 500)
   }
 
   const handleDayMouseDown = useCallback((key) => {
@@ -82,7 +76,7 @@ export default function App() {
     if (next.has(key)) { dragMode.current = "remove"; next.delete(key) }
     else { dragMode.current = "add"; next.add(key) }
     setUnavailable(next)
-    saveResponse(next)
+    updateLocal(next)
   }, [unavailable, activeName])
 
   const handleDayMouseEnter = useCallback((key) => {
@@ -92,8 +86,21 @@ export default function App() {
     if (dragMode.current === "add") next.add(key)
     else next.delete(key)
     setUnavailable(next)
-    saveResponse(next)
+    updateLocal(next)
   }, [unavailable, activeName])
+
+  // Step 3: explicit Save button → upsert to Supabase
+  async function handleSave() {
+    setSaving(true)
+    const { error } = await supabase.from('responses').upsert(
+      { name: activeName, unavailable_dates: [...unavailable], updated_at: new Date().toISOString() },
+      { onConflict: 'name' }
+    )
+    setSaving(false)
+    if (error) { setSaveMsg("Error saving. Try again."); }
+    else { setSaveMsg("Saved!") }
+    setTimeout(() => setSaveMsg(""), 2500)
+  }
 
   const prevMonths = () => {
     let m = startMonth - monthCount
@@ -121,40 +128,55 @@ export default function App() {
     ? `${MONTH_NAMES[months[0].month]} ${months[0].year}`
     : `${MONTH_NAMES[months[0].month]} ${months[0].year} — ${MONTH_NAMES[months[months.length - 1].month]} ${months[months.length - 1].year}`
 
+  // Login screen
+  if (!activeName) {
+    return (
+      <div className="min-h-screen bg-[#f1f2f4] flex flex-col items-center justify-center px-4">
+        <div className="bg-white rounded-2xl border border-border shadow-sm p-10 w-full max-w-sm text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-1">📅 Group Availability</h1>
+          <p className="text-muted-foreground text-sm mb-6">Enter your name to get started</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={nameInput}
+              autoFocus
+              onChange={(e) => { setNameInput(e.target.value); setNameError(false) }}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              placeholder="Your name"
+              className="flex-1 px-4 py-2.5 rounded-lg border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#3b3bf5] text-sm"
+            />
+            <button
+              onClick={handleLogin}
+              className="px-5 py-2.5 bg-[#3b3bf5] text-white rounded-lg font-medium text-sm hover:bg-[#2d2de0] transition-colors"
+            >
+              <Check size={18} />
+            </button>
+          </div>
+          {nameError && <p className="text-red-500 text-xs mt-2">Please enter your name.</p>}
+        </div>
+      </div>
+    )
+  }
+
+  // Main app
   return (
     <div className="min-h-screen bg-[#f1f2f4] flex flex-col items-center py-10 px-4">
       <div className="w-full max-w-7xl">
 
         {/* Header */}
-        <div className="text-center mb-5">
+        <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-foreground flex items-center justify-center gap-2">
             <span>📅</span> Group Availability
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            Mark dates you&apos;re <strong>unavailable</strong> (drag to multi-select)
+            Hey <strong>{activeName}</strong> — mark dates you&apos;re <strong>unavailable</strong> (drag to multi-select)
           </p>
-        </div>
-
-        {/* Name + Save */}
-        <div className="flex gap-2 w-1/2 mx-auto mb-1">
-          <input
-            type="text"
-            value={nameInput}
-            onChange={(e) => { setNameInput(e.target.value); setNameError(false) }}
-            onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            placeholder="Your name"
-            className="flex-1 px-4 py-2.5 rounded-lg border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#3b3bf5] text-sm"
-          />
           <button
-            onClick={handleSave}
-            className="px-6 py-2.5 bg-[#3b3bf5] text-white rounded-lg font-medium text-sm hover:bg-[#2d2de0] transition-colors"
+            onClick={() => { setActiveName(""); setNameInput(""); setUnavailable(new Set()) }}
+            className="mt-2 text-xs text-muted-foreground underline hover:text-foreground transition-colors"
           >
-            <Check size={18} />
+            Switch user
           </button>
-        </div>
-        <div className="text-center text-sm mb-5 h-5">
-          {nameError && <span className="text-red-500 text-xs">Please enter your name.</span>}
-          {nameSaved && <span className="text-green-600 text-xs">Saved! Now click or drag to mark your unavailable dates.</span>}
         </div>
 
         {/* Two-column layout */}
@@ -162,8 +184,8 @@ export default function App() {
 
           {/* LEFT: calendar */}
           <div className="flex-1 min-w-0">
-
             <div className="bg-white rounded-2xl border border-border p-5 shadow-sm mb-5">
+
               {/* Nav */}
               <div className="flex items-center justify-between mb-4">
                 <button
@@ -206,7 +228,7 @@ export default function App() {
               </div>
 
               {/* Calendar grids */}
-              <div className={`flex gap-6 overflow-x-auto transition-opacity duration-200 ${!activeName ? "opacity-40 pointer-events-none select-none" : ""}`}>
+              <div className="flex gap-6 overflow-x-auto">
                 {months.map(({ year, month }) => (
                   <CalendarGrid
                     key={`${year}-${month}`}
@@ -221,22 +243,36 @@ export default function App() {
                   />
                 ))}
               </div>
-              {!activeName && (
-                <p className="text-center text-xs text-muted-foreground mt-3">Enter your name and hit ✓ to start marking dates.</p>
-              )}
 
-              {/* Legend */}
-              <div className="flex items-center gap-3 mt-4 pt-3 border-t border-border text-xs text-muted-foreground flex-wrap">
-                <span className="font-medium">Availability:</span>
-                <div className="flex items-center gap-1">
-                  {["#5a7d6b","#739e87","#8fb89f","#b2cfc2","#cfe0d8","#eaeeec"].map((c) => (
-                    <div key={c} className="w-4 h-4 rounded-sm border border-black/10" style={{ background: c }} />
-                  ))}
+              {/* Legend + Save */}
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+                <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                  <span className="font-medium">Availability:</span>
+                  <div className="flex items-center gap-1">
+                    {["#5a7d6b","#739e87","#8fb89f","#b2cfc2","#cfe0d8","#eaeeec"].map((c) => (
+                      <div key={c} className="w-4 h-4 rounded-sm border border-black/10" style={{ background: c }} />
+                    ))}
+                  </div>
+                  <span>Most → Least</span>
+                  <div className="flex items-center gap-1.5 ml-2">
+                    <div className="w-4 h-4 rounded border-2 border-[#3b3bf5]" />
+                    <span>Today</span>
+                  </div>
                 </div>
-                <span>Most → Least</span>
-                <div className="flex items-center gap-1.5 ml-2">
-                  <div className="w-4 h-4 rounded border-2 border-[#3b3bf5]" />
-                  <span>Today</span>
+                <div className="flex items-center gap-3 shrink-0">
+                  {saveMsg && (
+                    <span className={`text-xs font-medium ${saveMsg === "Saved!" ? "text-green-600" : "text-red-500"}`}>
+                      {saveMsg}
+                    </span>
+                  )}
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center gap-2 px-5 py-2 bg-[#3b3bf5] text-white rounded-lg text-sm font-medium hover:bg-[#2d2de0] transition-colors disabled:opacity-50"
+                  >
+                    <Save size={15} />
+                    {saving ? "Saving..." : "Save"}
+                  </button>
                 </div>
               </div>
             </div>
@@ -264,7 +300,6 @@ export default function App() {
                 </div>
               </div>
             )}
-
           </div>
 
           {/* RIGHT: whiteboard */}
