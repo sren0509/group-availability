@@ -30,7 +30,7 @@ export default function EventPage() {
   // Calendar
   const [startYear, setStartYear] = useState(today.getFullYear())
   const [startMonth, setStartMonth] = useState(today.getMonth())
-  const [monthCount, setMonthCount] = useState(2)
+  const [monthCount, setMonthCount] = useState(() => window.innerWidth < 768 ? 1 : 2)
   const [showMonthMenu, setShowMonthMenu] = useState(false)
   const [responses, setResponses] = useState(new Map())
   const [unavailable, setUnavailable] = useState(new Set())
@@ -317,15 +317,12 @@ export default function EventPage() {
           />
           <button
             onClick={handleLogin}
-            className="w-10 h-10 rounded-full bg-[#3b3bf5] text-white flex items-center justify-center hover:bg-[#2d2de0] transition-colors shrink-0"
+            className="w-7 h-7 rounded-full bg-[#3b3bf5] text-white flex items-center justify-center hover:bg-[#2d2de0] transition-colors shrink-0"
           >
-            <Check size={18} />
+            <Check size={13} />
           </button>
         </div>
-        {nameError
-          ? <p className="text-red-500 text-xs text-center -mt-4 mb-4">Please enter your name.</p>
-          : !activeName && <p className="text-muted-foreground text-xs text-center -mt-4 mb-4">Enter your name and hit ✓ to start marking dates.</p>
-        }
+        {nameError && <p className="text-red-500 text-xs text-center -mt-4 mb-4">Please enter your name.</p>}
 
         {/* Two-column layout */}
         <div className="flex flex-col md:flex-row gap-4 md:gap-5 md:items-stretch">
@@ -376,7 +373,7 @@ export default function EventPage() {
               </div>
 
               {/* Calendar grids */}
-              <div className={`flex gap-6 overflow-x-auto transition-opacity duration-200 ${!activeName ? "opacity-40 pointer-events-none select-none" : ""}`}>
+              <div className="flex gap-6 overflow-x-auto">
                 {months.map(({ year, month }) => (
                   <CalendarGrid
                     key={`${year}-${month}`}
@@ -409,6 +406,9 @@ export default function EventPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
+                  {!activeName && !saveMsg && (
+                    <span className="text-xs text-muted-foreground hidden sm:inline">Enter your name and hit ✓ to start marking dates.</span>
+                  )}
                   {saveMsg && (
                     <span className={`text-xs font-medium ${saveMsg === "Saved!" ? "text-green-600" : "text-red-500"}`}>
                       {saveMsg}
@@ -417,9 +417,8 @@ export default function EventPage() {
                   <button
                     onClick={handleSave}
                     disabled={saving || !activeName}
-                    className="flex items-center gap-2 px-5 py-2 bg-[#3b3bf5] text-white rounded-lg text-sm font-medium hover:bg-[#2d2de0] transition-colors disabled:opacity-50"
+                    className="px-5 py-2 bg-[#3b3bf5] text-white rounded-lg text-sm font-medium hover:bg-[#2d2de0] transition-colors disabled:opacity-50"
                   >
-                    <Save size={15} />
                     {saving ? "Saving..." : "Save"}
                   </button>
                 </div>
