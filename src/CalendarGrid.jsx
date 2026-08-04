@@ -33,7 +33,7 @@ function heatColor(unavailCount, total) {
   return HEAT_COLORS[4]
 }
 
-export default function CalendarGrid({ year, month, myUnavailable, heatmap, totalPeople, today, onDayMouseDown, onDayMouseEnter, responses }) {
+export default function CalendarGrid({ year, month, myUnavailable, heatmap, totalPeople, today, onDayMouseDown, onDayMouseEnter, responses, hasSaved }) {
   const [hoveredKey, setHoveredKey] = useState(null)
 
   const daysInMonth = getDaysInMonth(year, month)
@@ -94,9 +94,9 @@ export default function CalendarGrid({ year, month, myUnavailable, heatmap, tota
                 "relative h-10 md:h-14 flex flex-col items-start justify-between p-1 md:p-1.5 text-xs md:text-sm font-medium border border-border select-none transition-colors duration-200",
                 cell.faded ? "text-muted-foreground/40 bg-background" : "cursor-pointer",
                 isToday ? "ring-2 ring-[#3b3bf5] ring-inset" : "",
-                isMyUnavail ? "ring-2 ring-[#95424E] ring-inset" : "",
+                isMyUnavail && !hasSaved ? "opacity-40" : "",
               ].filter(Boolean).join(" ")}
-              style={{ backgroundColor: cell.faded ? undefined : bg, color: cell.faded ? undefined : isMyUnavail ? "#af2634" : text }}
+              style={{ backgroundColor: cell.faded ? undefined : bg, color: cell.faded ? undefined : text }}
             >
               <span>{cell.day}</span>
               {!cell.faded && totalPeople > 0 && (

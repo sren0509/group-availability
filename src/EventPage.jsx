@@ -36,6 +36,7 @@ export default function EventPage() {
   const [unavailable, setUnavailable] = useState(new Set())
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState("")
+  const [hasSaved, setHasSaved] = useState(false)
 
   // Share banner — only auto-open when coming from event creation
   const [bannerCollapsed, setBannerCollapsed] = useState(!location.state?.justCreated)
@@ -116,6 +117,7 @@ export default function EventPage() {
 
   const handleDayMouseDown = useCallback((key) => {
     if (!activeName) return
+    setHasSaved(false)
     dragging.current = true
     draggedKeys.current = new Set([key])
     const next = new Set(unavailable)
@@ -143,7 +145,7 @@ export default function EventPage() {
     )
     setSaving(false)
     if (error) { setSaveMsg("Error saving. Try again.") }
-    else { setSaveMsg("Saved!") }
+    else { setSaveMsg("Saved!"); setHasSaved(true) }
     setTimeout(() => setSaveMsg(""), 2500)
   }
 
@@ -227,7 +229,7 @@ export default function EventPage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center py-6 md:py-10 px-3 md:px-4 relative" style={{ backgroundImage: "url('/bg.jpg')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}>
-      <div className="absolute inset-0 bg-white/60 backdrop-blur-sm pointer-events-none" />
+      <div className="absolute inset-0 bg-white/40 pointer-events-none" style={{ backdropFilter: 'blur(8px)' }} />
       <div className="relative z-10 w-full max-w-7xl">
 
         {/* Header */}
@@ -440,6 +442,7 @@ export default function EventPage() {
                     onDayMouseDown={handleDayMouseDown}
                     onDayMouseEnter={handleDayMouseEnter}
                     responses={responses}
+                    hasSaved={hasSaved}
                   />
                 ))}
               </div>
