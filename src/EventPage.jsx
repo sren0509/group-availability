@@ -232,38 +232,8 @@ export default function EventPage() {
       <div className="absolute inset-0 bg-white/40 pointer-events-none" style={{ backdropFilter: 'blur(8px)' }} />
       <div className="relative z-10 w-full max-w-7xl">
 
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4 md:mb-5 gap-2">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 group">
-              <span className="text-xl md:text-2xl">📅</span>
-              {editingName ? (
-                <input
-                  autoFocus
-                  value={nameEditVal}
-                  onChange={(e) => setNameEditVal(e.target.value)}
-                  onBlur={saveEventName}
-                  onKeyDown={onNameEditKey}
-                  className="text-lg md:text-2xl font-bold text-foreground bg-transparent border-b-2 border-[#3b3bf5] focus:outline-none min-w-0 w-full"
-                />
-              ) : (
-                <>
-                  <h1 className="text-lg md:text-2xl font-bold text-foreground truncate">{event.name}</h1>
-                  <button
-                    onClick={startEditName}
-                    title="Rename event"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0"
-                  >
-                    <Pencil size={15} />
-                  </button>
-                </>
-              )}
-            </div>
-            <p className="text-muted-foreground mt-0.5 text-xs md:text-sm">
-              Mark dates you&apos;re <strong style={{ color: "#af2634" }}>unavailable</strong> (drag to multi-select)
-            </p>
-          </div>
-
+        {/* Header — pill button only, top right */}
+        <div className="flex justify-end mb-3">
           {/* Split pill button */}
           <div className="relative shrink-0" ref={newEventPopoverRef}>
             <div className="flex items-center rounded-full border border-border bg-white shadow-sm overflow-hidden">
@@ -302,6 +272,37 @@ export default function EventPage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Centered title */}
+        <div className="text-center mb-4">
+          <div className="flex items-center justify-center gap-2 group">
+            <span className="text-xl md:text-2xl">📅</span>
+            {editingName ? (
+              <input
+                autoFocus
+                value={nameEditVal}
+                onChange={(e) => setNameEditVal(e.target.value)}
+                onBlur={saveEventName}
+                onKeyDown={onNameEditKey}
+                className="text-lg md:text-2xl font-bold text-foreground bg-transparent border-b-2 border-[#3b3bf5] focus:outline-none"
+              />
+            ) : (
+              <>
+                <h1 className="text-lg md:text-2xl font-bold text-foreground">{event.name}</h1>
+                <button
+                  onClick={startEditName}
+                  title="Rename event"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground shrink-0"
+                >
+                  <Pencil size={15} />
+                </button>
+              </>
+            )}
+          </div>
+          <p className="text-muted-foreground mt-0.5 text-xs md:text-sm">
+            Mark dates you&apos;re <strong style={{ color: "#af2634" }}>unavailable</strong> (drag to multi-select)
+          </p>
         </div>
 
         {/* Share banner */}
@@ -464,7 +465,7 @@ export default function EventPage() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   {!activeName && !saveMsg && (
-                    <span className="text-xs text-muted-foreground hidden sm:inline">Enter your name and hit ✓ to start marking dates.</span>
+                    <span className="text-xs text-muted-foreground">Enter your name and hit ✓ to start.</span>
                   )}
                   {saveMsg && (
                     <span className={`text-xs font-medium ${saveMsg === "Saved!" ? "text-green-600" : "text-red-500"}`}>
