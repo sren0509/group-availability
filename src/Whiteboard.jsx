@@ -45,7 +45,7 @@ export default function Whiteboard({ activeName, eventId }) {
 
   async function handlePost() {
     const text = memoInput.trim()
-    if (!text) return
+    if (!text || !activeName) return
     setSubmitting(true)
     await supabase.from('notes').insert({ event_id: eventId, content: text, author: activeName || 'Anonymous' })
     setSubmitting(false)

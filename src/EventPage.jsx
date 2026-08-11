@@ -102,9 +102,11 @@ export default function EventPage() {
     const n = nameInput.trim()
     if (!n) { setNameError(true); return }
     setNameError(false)
+    const isSwitch = !!activeName && activeName !== n
     setActiveName(n)
     const existing = responses.get(n)
     setUnavailable(existing ? new Set(existing) : new Set())
+    if (isSwitch) fetchAllResponses()
   }
 
   const updateLocal = (next) => {
@@ -362,24 +364,44 @@ export default function EventPage() {
         )}
 
         {/* Name input */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="text-lg font-semibold text-foreground whitespace-nowrap">My name is</span>
-          <input
-            type="text"
-            value={nameInput}
-            onChange={(e) => { setNameInput(e.target.value); setNameError(false) }}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            placeholder="your name"
-            className="text-lg text-center bg-transparent border-0 border-b-2 border-border focus:outline-none focus:border-[#3b3bf5] text-foreground placeholder:text-muted-foreground w-40 pb-0.5"
-          />
-          <button
-            onClick={handleLogin}
-            className="w-7 h-7 rounded-full bg-[#3b3bf5] text-white flex items-center justify-center hover:bg-[#2d2de0] transition-colors shrink-0"
-          >
-            <Check size={13} />
-          </button>
+        <div className="flex flex-col items-center mb-6">
+          <div className="flex items-center justify-center gap-3">
+            <span className="text-lg font-semibold text-foreground whitespace-nowrap">My name is</span>
+            {activeName ? (
+              <>
+                <span className="text-lg font-semibold text-[#3b3bf5]">{activeName}</span>
+                <button
+                  onClick={() => { setNameInput(activeName); setActiveName("") }}
+                  title="Change name"
+                  className="w-7 h-7 rounded-full border border-border bg-white text-muted-foreground flex items-center justify-center hover:bg-gray-50 transition-colors shrink-0"
+                >
+                  <Pencil size={12} />
+                </button>
+              </>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => { setNameInput(e.target.value); setNameError(false) }}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  placeholder="your name"
+                  autoFocus
+                  className="text-lg text-center bg-transparent border-0 border-b-2 border-border focus:outline-none focus:border-[#3b3bf5] text-foreground placeholder:text-muted-foreground w-40 pb-0.5"
+                />
+                <button
+                  onClick={handleLogin}
+                  disabled={!nameInput.trim()}
+                  className="w-7 h-7 rounded-full bg-[#3b3bf5] text-white flex items-center justify-center hover:bg-[#2d2de0] transition-colors shrink-0 disabled:opacity-40"
+                >
+                  <Check size={13} />
+                </button>
+              </>
+            )}
+          </div>
+          {nameError && <p className="text-red-500 text-xs mt-1">Please enter your name.</p>}
+          {!activeName && !nameError && <p className="text-xs text-muted-foreground mt-1">Enter your name and hit ✓ to start.</p>}
         </div>
-        {nameError && <p className="text-red-500 text-xs text-center -mt-4 mb-4">Please enter your name.</p>}
 
         {/* Two-column layout */}
         <div className="flex flex-col md:flex-row gap-4 md:gap-5 md:items-stretch">
@@ -464,9 +486,6 @@ export default function EventPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  {!activeName && !saveMsg && (
-                    <span className="text-xs text-muted-foreground">Enter your name and hit ✓ to start.</span>
-                  )}
                   {saveMsg && (
                     <span className={`text-xs font-medium ${saveMsg === "Saved!" ? "text-green-600" : "text-red-500"}`}>
                       {saveMsg}
@@ -510,7 +529,7 @@ export default function EventPage() {
 
           {/* RIGHT: whiteboard */}
           <div className="w-full md:w-80 md:shrink-0 md:self-stretch flex flex-col" style={{ minHeight: '360px' }}>
-            <Whiteboard activeName={activeName || nameInput.trim()} eventId={eventId} />
+            <Whiteboard activeName={activeName} eventId={eventId} />
           </div>
 
         </div>
