@@ -31,7 +31,7 @@ function AppShell() {
   return (
     <div className="min-h-screen flex flex-col items-center py-10 px-4 relative" style={{ backgroundImage: "url('/bg.jpg')", backgroundSize: "cover", backgroundPosition: "center" }}>
       <div className="absolute inset-0 bg-white/40 pointer-events-none" style={{ backdropFilter: 'blur(8px)' }} />
-      <div className="relative z-10 w-full max-w-7xl pointer-events-none select-none">
+      <div className="relative z-10 w-full max-w-7xl pointer-events-none select-none hidden md:block">
         <div className="text-center mb-4">
           <h1 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
             <span>📅</span> Alaska trip
