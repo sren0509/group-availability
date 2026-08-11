@@ -118,6 +118,9 @@ export default function CreateEvent() {
   return (
     <div className="relative">
       <AppShell />
+      <p className="fixed bottom-3 right-4 z-50 text-[11px] text-white/60 select-none">
+        built by @nayenotyet &amp; @sren0509
+      </p>
       <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
         <div className="relative z-10 bg-white rounded-2xl border border-border shadow-xl p-8 w-full max-w-sm flex flex-col gap-5">
