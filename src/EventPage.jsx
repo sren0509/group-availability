@@ -51,6 +51,7 @@ export default function EventPage() {
   const dragging = useRef(false)
   const dragMode = useRef("add")
   const draggedKeys = useRef(new Set())
+  const hasAutoJumped = useRef(false)
 
   useEffect(() => {
     if (!showNewEventPopover) return
@@ -85,6 +86,22 @@ export default function EventPage() {
       const map = new Map()
       data.forEach(r => map.set(r.name, new Set(r.unavailable_dates || [])))
       setResponses(map)
+
+      if (!hasAutoJumped.current) {
+        hasAutoJumped.current = true
+        const monthCounts = new Map()
+        map.forEach((dates) => dates.forEach((d) => {
+          const ym = d.slice(0, 7)
+          monthCounts.set(ym, (monthCounts.get(ym) || 0) + 1)
+        }))
+        let bestYM = null, bestCount = 0
+        monthCounts.forEach((count, ym) => { if (count > bestCount) { bestCount = count; bestYM = ym } })
+        if (bestYM) {
+          const [y, m] = bestYM.split('-').map(Number)
+          setStartYear(y)
+          setStartMonth(m - 1)
+        }
+      }
     }
   }
 
